@@ -2,10 +2,12 @@ package com.example.ecom_app.service;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+
 import com.example.ecom_app.model.Category;
 
 public interface CategoryServiceInterface {
-    List<Category> getAllCategories();
+    ResponseEntity<List<Category>> getAllCategories();
 
-    List<Category> addCategory(Category category);
+    ResponseEntity<String> addCategory(Category category);
 }
