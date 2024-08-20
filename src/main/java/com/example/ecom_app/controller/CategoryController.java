@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,21 +20,22 @@ import com.example.ecom_app.model.Category;
 import com.example.ecom_app.service.CategoryService;
 
 @RestController
+@RequestMapping("/api/")
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @GetMapping("api/public/categories")
+    @GetMapping("public/categories")
     public ResponseEntity<List<Category>> getAllCategories() {
         return categoryService.getAllCategories();
     }
 
-    @PostMapping("api/public/categories")
+    @PostMapping("public/categories")
     public ResponseEntity<String> addCategory(@RequestBody Category category) {
         return categoryService.addCategory(category);
     }
 
-    @PutMapping("api/public/categories")
+    @PutMapping("public/categories")
     public ResponseEntity<String> updateCategory(@RequestBody Category category) {
         try {
             return categoryService.updateCategory(category);
@@ -42,7 +44,7 @@ public class CategoryController {
         }
     }
 
-    @DeleteMapping("api/admin/categories/{category}")
+    @DeleteMapping("admin/categories/{category}")
     public ResponseEntity<String> deleteCategory(@PathVariable long category) {
         try {
             return categoryService.deleteCategory(category);
