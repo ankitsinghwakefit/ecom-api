@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.ecom_app.exceptions.APIException;
+import com.example.ecom_app.exceptions.MyNotFoundException;
 import com.example.ecom_app.model.Category;
 import com.example.ecom_app.repo.CategoryRepository;
 
@@ -25,6 +27,10 @@ public class CategoryService implements CategoryServiceInterface {
     }
 
     public ResponseEntity<String> addCategory(Category category) {
+        Category presenCategory = categoryRepository.findByCategoryName(category.getCategoryName());
+        if (presenCategory != null) {
+            throw new APIException("category with name " + category.getCategoryName() + " already exists");
+        }
         categoryRepository.save(category);
         // long id = System.currentTimeMillis();
         // category.setCategoryId(id);
@@ -51,7 +57,7 @@ public class CategoryService implements CategoryServiceInterface {
             categoryRepository.save(category);
             return new ResponseEntity<>("category updated successfully", HttpStatus.OK);
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found");
+            throw new MyNotFoundException("category", "ID", categoryId);
         }
         // Optional<Category> targetCategory = categories.stream()
         // .filter(cate -> cate.getCategoryId() == categoryId).findFirst();
@@ -71,7 +77,7 @@ public class CategoryService implements CategoryServiceInterface {
             categoryRepository.deleteById(category);
             return new ResponseEntity<>("category " + category + " deleted successfully", HttpStatus.OK);
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category not found");
+            throw new MyNotFoundException("category", "ID", category);
         }
 
         // Category targeCategory = categories.stream()

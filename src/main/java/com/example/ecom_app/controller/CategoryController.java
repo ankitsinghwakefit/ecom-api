@@ -19,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.ecom_app.model.Category;
 import com.example.ecom_app.service.CategoryService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/")
 public class CategoryController {
@@ -31,25 +33,27 @@ public class CategoryController {
     }
 
     @PostMapping("public/categories")
-    public ResponseEntity<String> addCategory(@RequestBody Category category) {
+    public ResponseEntity<String> addCategory(@Valid @RequestBody Category category) {
         return categoryService.addCategory(category);
     }
 
     @PutMapping("public/categories")
-    public ResponseEntity<String> updateCategory(@RequestBody Category category) {
-        try {
-            return categoryService.updateCategory(category);
-        } catch (ResponseStatusException e) {
-            return new ResponseEntity<String>(e.getReason(), e.getStatusCode());
-        }
+    public ResponseEntity<String> updateCategory(@Valid @RequestBody Category category) {
+        return categoryService.updateCategory(category);
+        // try {
+        // return categoryService.updateCategory(category);
+        // } catch (ResponseStatusException e) {
+        // return new ResponseEntity<String>(e.getReason(), e.getStatusCode());
+        // }
     }
 
     @DeleteMapping("admin/categories/{category}")
     public ResponseEntity<String> deleteCategory(@PathVariable long category) {
-        try {
-            return categoryService.deleteCategory(category);
-        } catch (ResponseStatusException e) {
-            return new ResponseEntity<>(e.getReason(), e.getStatusCode());
-        }
+        return categoryService.deleteCategory(category);
+        // try {
+        // return categoryService.deleteCategory(category);
+        // } catch (ResponseStatusException e) {
+        // return new ResponseEntity<>(e.getReason(), e.getStatusCode());
+        // }
     }
 }
