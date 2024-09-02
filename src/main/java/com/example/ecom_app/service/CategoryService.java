@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +15,36 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.ecom_app.exceptions.APIException;
 import com.example.ecom_app.exceptions.MyNotFoundException;
 import com.example.ecom_app.model.Category;
+import com.example.ecom_app.payload.CategoryRequestDTO;
+import com.example.ecom_app.payload.CategoryResponse;
 import com.example.ecom_app.repo.CategoryRepository;
 
 @Service
 public class CategoryService implements CategoryServiceInterface {
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
     // private List<Category> categories = new ArrayList<>();
 
-    public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(categoryRepository.findAll());
+    public CategoryResponse getAllCategories() {
+        // ModelMapper modelMapper = new ModelMapper();
+        // TypeMap<Category, CategoryDTO> typeMap =
+        // modelMapper.createTypeMap(Category.class, CategoryDTO.class);
+        // categoryRepository.findAll().stream().map(cat -> {
+        // typeMap.addMappings(mapper -> {
+        // mapper.map(src -> src.get, CategoryDTO::categories);
+        // });
+        // });
+        List<Category> result = categoryRepository.findAll();
+        List<CategoryRequestDTO> categoryRequestDTOs = result.stream().map(eachCategory -> {
+            modelMapper.map(eachCategory, CategoryRequestDTO.class);
+        }).toList();
+        if (result.isEmpty()) {
+            throw new APIException("There are no categories.");
+        }
+        return ResponseEntity.ok("content");
         // return ResponseEntity.ok(categories);
     }
 
