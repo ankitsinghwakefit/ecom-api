@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,10 +14,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.ecom_app.model.Category;
+import com.example.ecom_app.payload.CategoryRequestDTO;
+import com.example.ecom_app.payload.CategoryResponse;
 import com.example.ecom_app.service.CategoryService;
 
 import jakarta.validation.Valid;
@@ -28,18 +32,22 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("public/categories")
-    public ResponseEntity<List<Category>> getAllCategories() {
-        return categoryService.getAllCategories();
+    public CategoryResponse getAllCategories(
+            @RequestParam(name = "pageNumber") Integer pageNumber,
+            @RequestParam(name = "pageSize") Integer pageSize) {
+        return categoryService.getAllCategories(pageNumber, pageSize);
     }
 
     @PostMapping("public/categories")
-    public ResponseEntity<String> addCategory(@Valid @RequestBody Category category) {
-        return categoryService.addCategory(category);
+    public ResponseEntity<CategoryRequestDTO> addCategory(@Valid @RequestBody CategoryRequestDTO category) {
+        CategoryRequestDTO categoryRequestDTO = categoryService.addCategory(category);
+        return new ResponseEntity<>(categoryRequestDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("public/categories")
-    public ResponseEntity<String> updateCategory(@Valid @RequestBody Category category) {
-        return categoryService.updateCategory(category);
+    public ResponseEntity<CategoryRequestDTO> updateCategory(@Valid @RequestBody CategoryRequestDTO category) {
+        CategoryRequestDTO updatedCat = categoryService.updateCategory(category);
+        return new ResponseEntity<>(updatedCat, HttpStatus.OK);
         // try {
         // return categoryService.updateCategory(category);
         // } catch (ResponseStatusException e) {
@@ -48,8 +56,9 @@ public class CategoryController {
     }
 
     @DeleteMapping("admin/categories/{category}")
-    public ResponseEntity<String> deleteCategory(@PathVariable long category) {
-        return categoryService.deleteCategory(category);
+    public ResponseEntity<CategoryRequestDTO> deleteCategory(@PathVariable long category) {
+        CategoryRequestDTO deletedCat = categoryService.deleteCategory(category);
+        return new ResponseEntity<>(deletedCat, HttpStatus.OK);
         // try {
         // return categoryService.deleteCategory(category);
         // } catch (ResponseStatusException e) {

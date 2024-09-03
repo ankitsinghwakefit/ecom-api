@@ -28,7 +28,7 @@ public class CategoryService implements CategoryServiceInterface {
     private ModelMapper modelMapper;
     // private List<Category> categories = new ArrayList<>();
 
-    public CategoryResponse getAllCategories() {
+    public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize) {
         // ModelMapper modelMapper = new ModelMapper();
         // TypeMap<Category, CategoryDTO> typeMap =
         // modelMapper.createTypeMap(Category.class, CategoryDTO.class);
@@ -38,29 +38,37 @@ public class CategoryService implements CategoryServiceInterface {
         // });
         // });
         List<Category> result = categoryRepository.findAll();
-        List<CategoryRequestDTO> categoryRequestDTOs = result.stream().map(eachCategory -> {
-            modelMapper.map(eachCategory, CategoryRequestDTO.class);
-        }).toList();
         if (result.isEmpty()) {
             throw new APIException("There are no categories.");
         }
-        return ResponseEntity.ok("content");
+        List<CategoryRequestDTO> categoryRequestDTOs = result.stream()
+                .map(eachCategory -> modelMapper.map(eachCategory, CategoryRequestDTO.class)).toList();
+        CategoryResponse categoryResponse = new CategoryResponse();
+        categoryResponse.setContent(categoryRequestDTOs);
+        categoryResponse.setPageNumber(pageNumber);
+        categoryResponse.setPageSize(pageSize);
+        return categoryResponse;
+        // return ResponseEntity.ok("content");
         // return ResponseEntity.ok(categories);
     }
 
-    public ResponseEntity<String> addCategory(Category category) {
+    public CategoryRequestDTO addCategory(CategoryRequestDTO category) {
         Category presenCategory = categoryRepository.findByCategoryName(category.getCategoryName());
         if (presenCategory != null) {
             throw new APIException("category with name " + category.getCategoryName() + " already exists");
         }
-        categoryRepository.save(category);
+        Category newCategory = modelMapper.map(category, Category.class);
+        Category saved = categoryRepository.save(newCategory);
         // long id = System.currentTimeMillis();
         // category.setCategoryId(id);
         // categories.add(category);
-        return new ResponseEntity<>("category added successfully", HttpStatus.CREATED);
+        // return new ResponseEntity<>("category added successfully",
+        // HttpStatus.CREATED);
+        return modelMapper.map(saved, CategoryRequestDTO.class);
+        // return ResponseEntity.ok("category added successfully");
     }
 
-    public ResponseEntity<String> updateCategory(Category category) {
+    public CategoryRequestDTO updateCategory(CategoryRequestDTO category) {
 
         // int position = -1;
         // System.out.println("category " + category.getCategoryId());
@@ -76,8 +84,9 @@ public class CategoryService implements CategoryServiceInterface {
         long categoryId = category.getCategoryId();
         Optional<Category> targeCategory = categoryRepository.findById(categoryId);
         if (targeCategory.isPresent()) {
-            categoryRepository.save(category);
-            return new ResponseEntity<>("category updated successfully", HttpStatus.OK);
+            Category updateCategory = modelMapper.map(category, Category.class);
+            Category savedCat = categoryRepository.save(updateCategory);
+            return modelMapper.map(savedCat, CategoryRequestDTO.class);
         } else {
             throw new MyNotFoundException("category", "ID", categoryId);
         }
@@ -92,15 +101,21 @@ public class CategoryService implements CategoryServiceInterface {
         // }
     }
 
-    public ResponseEntity<String> deleteCategory(long category) {
-        Optional<Category> targeCategory = categoryRepository.findById(category);
-
-        if (targeCategory.isPresent()) {
-            categoryRepository.deleteById(category);
-            return new ResponseEntity<>("category " + category + " deleted successfully", HttpStatus.OK);
-        } else {
-            throw new MyNotFoundException("category", "ID", category);
-        }
+    public CategoryRequestDTO deleteCategory(long category) {
+        Category tarCategory = categoryRepository.findById(category)
+                .orElseThrow(() -> new MyNotFoundException("category", "ID", category));
+        categoryRepository.delete(tarCategory);
+        return modelMapper.map(tarCategory, CategoryRequestDTO.class);
+        // if (targeCategory.isPresent()) {
+        // categoryRepository.deleteById(category);
+        // return modelMapper.map(targeCategory, CategoryRequestDTO.class);
+        // // return new ResponseEntity<>("category " + category + " deleted
+        // successfully",
+        // // HttpStatus.OK);
+        // }
+        // else {
+        // throw new MyNotFoundException("category", "ID", category);
+        // }
 
         // Category targeCategory = categories.stream()
         // .filter(cate -> cate.getCategoryId() == category)
