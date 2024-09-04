@@ -9,4 +9,7 @@ public class CategoryResponse {
     private List<CategoryRequestDTO> content;
     private Integer pageNumber;
     private Integer pageSize;
+    private long totalElements;
+    private Integer totalPages;
+    private boolean lastPage;
 }

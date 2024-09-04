@@ -7,6 +7,10 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,7 +32,7 @@ public class CategoryService implements CategoryServiceInterface {
     private ModelMapper modelMapper;
     // private List<Category> categories = new ArrayList<>();
 
-    public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize) {
+    public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         // ModelMapper modelMapper = new ModelMapper();
         // TypeMap<Category, CategoryDTO> typeMap =
         // modelMapper.createTypeMap(Category.class, CategoryDTO.class);
@@ -37,7 +41,12 @@ public class CategoryService implements CategoryServiceInterface {
         // mapper.map(src -> src.get, CategoryDTO::categories);
         // });
         // });
-        List<Category> result = categoryRepository.findAll();
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Category> categoryPage = categoryRepository.findAll(pageDetails);
+        List<Category> result = categoryPage.getContent();
+        // List<Category> result = categoryRepository.findAll();
         if (result.isEmpty()) {
             throw new APIException("There are no categories.");
         }
@@ -45,8 +54,11 @@ public class CategoryService implements CategoryServiceInterface {
                 .map(eachCategory -> modelMapper.map(eachCategory, CategoryRequestDTO.class)).toList();
         CategoryResponse categoryResponse = new CategoryResponse();
         categoryResponse.setContent(categoryRequestDTOs);
-        categoryResponse.setPageNumber(pageNumber);
-        categoryResponse.setPageSize(pageSize);
+        categoryResponse.setPageNumber(categoryPage.getNumber());
+        categoryResponse.setPageSize(categoryPage.getSize());
+        categoryResponse.setTotalElements(categoryPage.getTotalElements());
+        categoryResponse.setTotalPages(categoryPage.getTotalPages());
+        categoryResponse.setLastPage(categoryPage.isLast());
         return categoryResponse;
         // return ResponseEntity.ok("content");
         // return ResponseEntity.ok(categories);

@@ -9,7 +9,7 @@ import com.example.ecom_app.payload.CategoryRequestDTO;
 import com.example.ecom_app.payload.CategoryResponse;
 
 public interface CategoryServiceInterface {
-    CategoryResponse getAllCategories();
+    CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
     CategoryRequestDTO addCategory(CategoryRequestDTO category);
 }

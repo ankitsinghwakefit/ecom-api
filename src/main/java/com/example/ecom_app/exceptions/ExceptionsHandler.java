@@ -1,6 +1,9 @@
 package com.example.ecom_app.exceptions;
 
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.example.ecom_app.payload.CustomApiResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -27,14 +30,16 @@ public class ExceptionsHandler extends RuntimeException {
     }
 
     @ExceptionHandler(MyNotFoundException.class)
-    public ResponseEntity<String> myResourceNotFoundException(MyNotFoundException ex) {
+    public ResponseEntity<CustomApiResponse> myResourceNotFoundException(MyNotFoundException ex) {
         String message = ex.getMessage();
-        return new ResponseEntity<String>(message, HttpStatus.NOT_FOUND);
+        CustomApiResponse newResponse = new CustomApiResponse(message, false);
+        return new ResponseEntity<CustomApiResponse>(newResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(APIException.class)
-    public ResponseEntity<String> myAPIException(APIException ex) {
+    public ResponseEntity<CustomApiResponse> myAPIException(APIException ex) {
         String message = ex.getMessage();
-        return new ResponseEntity<String>(message, HttpStatus.BAD_REQUEST);
+        CustomApiResponse newResponse = new CustomApiResponse(message, false);
+        return new ResponseEntity<CustomApiResponse>(newResponse, HttpStatus.BAD_REQUEST);
     }
 }

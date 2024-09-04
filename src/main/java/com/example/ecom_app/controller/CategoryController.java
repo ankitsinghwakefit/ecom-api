@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.ecom_app.config.AppConstants;
 import com.example.ecom_app.model.Category;
 import com.example.ecom_app.payload.CategoryRequestDTO;
 import com.example.ecom_app.payload.CategoryResponse;
@@ -33,9 +34,11 @@ public class CategoryController {
 
     @GetMapping("public/categories")
     public CategoryResponse getAllCategories(
-            @RequestParam(name = "pageNumber") Integer pageNumber,
-            @RequestParam(name = "pageSize") Integer pageSize) {
-        return categoryService.getAllCategories(pageNumber, pageSize);
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_CATEGORIES_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.DEFAULT_SORT_DIR, required = false) String sortOrder) {
+        return categoryService.getAllCategories(pageNumber, pageSize, sortBy, sortOrder);
     }
 
     @PostMapping("public/categories")
