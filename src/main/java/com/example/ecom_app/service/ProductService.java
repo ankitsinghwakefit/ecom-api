@@ -5,6 +5,7 @@ import java.util.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.ecom_app.exceptions.APIException;
 import com.example.ecom_app.exceptions.MyNotFoundException;
@@ -26,14 +27,15 @@ public class ProductService implements ProductServiceInterface {
     @Autowired
     private ModelMapper modelMapper;
 
-    public ProductRequestDTO addProduct(Long categoryId, Product product) {
+    public ProductRequestDTO addProduct(Long categoryId, ProductRequestDTO product) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new MyNotFoundException("Category", "id", categoryId));
         product.setCategory(category);
         product.setImage("default.jpeg");
         double specialPrice = product.getPrice() * ((100 - product.getDiscount()) / 100);
         product.setSpecialPrice(specialPrice);
-        return modelMapper.map(productRepository.save(product), ProductRequestDTO.class);
+        Product newProduct = modelMapper.map(product, Product.class);
+        return modelMapper.map(productRepository.save(newProduct), ProductRequestDTO.class);
     }
 
     public ProductResponse getProducts() {
@@ -71,5 +73,27 @@ public class ProductService implements ProductServiceInterface {
         ProductResponse response = new ProductResponse();
         response.setContent(prodDto);
         return response;
+    }
+
+    public ProductRequestDTO updateProduct(Long productId, Product product) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new MyNotFoundException("Product", "id", productId));
+        existingProduct.setProductName(product.getProductName());
+        existingProduct.setDescription(product.getDescription());
+        existingProduct.setQuantity(product.getQuantity());
+        existingProduct.setDiscount(product.getDiscount());
+        existingProduct.setPrice(product.getPrice());
+        double specialPrice = product.getPrice() * ((100 - product.getDiscount()) / 100);
+        existingProduct.setSpecialPrice(specialPrice);
+        Product saveProduct = productRepository.save(existingProduct);
+        return modelMapper.map(saveProduct, ProductRequestDTO.class);
+    }
+
+    public String deleteProduct(Long productId) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new MyNotFoundException("Product", "id", productId));
+
+        productRepository.delete(existingProduct);
+        return "Product with id " + productId + " deleted";
     }
 }
