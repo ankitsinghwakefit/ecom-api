@@ -1,11 +1,15 @@
 package com.example.ecom_app.service;
 
 import java.util.*;
+import java.util.UUID;
+import java.io.File;
+import java.nio.file.Files;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.ecom_app.exceptions.APIException;
 import com.example.ecom_app.exceptions.MyNotFoundException;
@@ -95,5 +99,38 @@ public class ProductService implements ProductServiceInterface {
 
         productRepository.delete(existingProduct);
         return "Product with id " + productId + " deleted";
+    }
+
+    public ProductRequestDTO uploadImage(Long productId, MultipartFile imageFile) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new MyNotFoundException("Product", "id", productId));
+
+        // Upload the image to server
+        // get the file name of uploaded image
+        String path = "images/";
+
+        String fileName = uploadImage(path, imageFile);
+
+        // updating the image file name in product
+        existingProduct.setImage(fileName);
+        Product savedProduct = productRepository.save(existingProduct);
+
+        return modelMapper.map(savedProduct, ProductRequestDTO.class);
+    }
+
+    private String uploadImage(String path, MultipartFile imageFile) {
+        String originalImageName = imageFile.getOriginalFilename();
+        String randomId = UUID.randomUUID().toString();
+        String newImageName = randomId.concat(originalImageName.substring(originalImageName.lastIndexOf('.')));
+        String filePath = path + File.separator + newImageName;
+
+        // check if path already exists if not create
+        File folder = new File(path);
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
+
+        // save the file to given path
+        Files.copy(imageFile.getInputStream(), null)
     }
 }
