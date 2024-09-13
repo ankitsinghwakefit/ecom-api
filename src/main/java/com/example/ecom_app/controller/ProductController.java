@@ -20,6 +20,8 @@ import com.example.ecom_app.payload.ProductRequestDTO;
 import com.example.ecom_app.payload.ProductResponse;
 import com.example.ecom_app.service.ProductService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api")
 public class ProductController {
@@ -42,14 +44,14 @@ public class ProductController {
     }
 
     @PostMapping("/admin/categories/{categoryId}/product")
-    public ResponseEntity<ProductRequestDTO> addProduct(@PathVariable("categoryId") Long categoryId,
-            @RequestBody ProductRequestDTO productDto) {
+    public ResponseEntity<ProductRequestDTO> addProduct(@Valid @RequestBody ProductRequestDTO productDto,
+            @PathVariable("categoryId") Long categoryId) {
         return new ResponseEntity<>(productService.addProduct(categoryId, productDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/admin/products/{productId}")
-    public ResponseEntity<ProductRequestDTO> updateProduct(@PathVariable("productId") Long productId,
-            @RequestBody Product product) {
+    public ResponseEntity<ProductRequestDTO> updateProduct(@Valid @RequestBody Product product,
+            @PathVariable("productId") Long productId) {
         return new ResponseEntity<>(productService.updateProduct(productId, product), HttpStatus.OK);
     }
 

@@ -29,6 +29,19 @@ public class ExceptionsHandler extends RuntimeException {
         return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
     }
 
+    // @ExceptionHandler(ConstraintViolationException.class)
+    // public ResponseEntity<Map<String, String>>
+    // myMethodArgumentNotValidExceptionn(MethodArgumentNotValidException ex) {
+    // Map<String, String> response = new HashMap<>();
+    // ex.getBindingResult().getAllErrors().forEach((error) -> {
+    // String fieldName = ((FieldError) error).getField();
+    // String errorMessage = error.getDefaultMessage();
+    // response.put(fieldName, errorMessage);
+    // });
+    // return new ResponseEntity<Map<String, String>>(response,
+    // HttpStatus.BAD_REQUEST);
+    // }
+
     @ExceptionHandler(MyNotFoundException.class)
     public ResponseEntity<CustomApiResponse> myResourceNotFoundException(MyNotFoundException ex) {
         String message = ex.getMessage();

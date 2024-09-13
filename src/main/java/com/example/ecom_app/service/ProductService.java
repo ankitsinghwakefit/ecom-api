@@ -1,16 +1,19 @@
 package com.example.ecom_app.service;
 
 import java.util.*;
-import java.util.UUID;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.ecom_app.config.AppConstants;
 import com.example.ecom_app.exceptions.APIException;
 import com.example.ecom_app.exceptions.MyNotFoundException;
 import com.example.ecom_app.model.Category;
@@ -31,9 +34,21 @@ public class ProductService implements ProductServiceInterface {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private FileService fileService;
+
+    @Value("${project.image}")
+    private String path;
+
     public ProductRequestDTO addProduct(Long categoryId, ProductRequestDTO product) {
+        // check if product already exists or not
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new MyNotFoundException("Category", "id", categoryId));
+
+        List<Product> isExistingProduct = productRepository.findByProductName(product.getProductName());
+        if (isExistingProduct.size() > 0) {
+            throw new APIException("This product already exists");
+        }
         product.setCategory(category);
         product.setImage("default.jpeg");
         double specialPrice = product.getPrice() * ((100 - product.getDiscount()) / 100);
@@ -43,7 +58,11 @@ public class ProductService implements ProductServiceInterface {
     }
 
     public ProductResponse getProducts() {
+        // check is product size is 0 or not
         List<Product> products = productRepository.findAll();
+        if (products.isEmpty()) {
+            throw new APIException("No products found");
+        }
         List<ProductRequestDTO> prodDto = products.stream().map(prod -> {
             return modelMapper.map(prod, ProductRequestDTO.class);
         }).toList();
@@ -107,30 +126,14 @@ public class ProductService implements ProductServiceInterface {
 
         // Upload the image to server
         // get the file name of uploaded image
-        String path = "images/";
+        // String path = AppConstants.IMAGE_PATH_STRING;
 
-        String fileName = uploadImage(path, imageFile);
+        String fileName = fileService.uploadImage(path, imageFile);
 
         // updating the image file name in product
         existingProduct.setImage(fileName);
         Product savedProduct = productRepository.save(existingProduct);
 
         return modelMapper.map(savedProduct, ProductRequestDTO.class);
-    }
-
-    private String uploadImage(String path, MultipartFile imageFile) {
-        String originalImageName = imageFile.getOriginalFilename();
-        String randomId = UUID.randomUUID().toString();
-        String newImageName = randomId.concat(originalImageName.substring(originalImageName.lastIndexOf('.')));
-        String filePath = path + File.separator + newImageName;
-
-        // check if path already exists if not create
-        File folder = new File(path);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        // save the file to given path
-        Files.copy(imageFile.getInputStream(), null)
     }
 }

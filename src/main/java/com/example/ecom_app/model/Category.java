@@ -1,9 +1,15 @@
 package com.example.ecom_app.model;
 
+import java.util.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,6 +28,10 @@ public class Category {
     @NotBlank(message = "please provide a category name")
     @Size(min = 2, message = "category name must be at least 2 characters long")
     private String categoryName;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Product> products;
 
     // public Long getCategoryId() {
     // return categoryId;
