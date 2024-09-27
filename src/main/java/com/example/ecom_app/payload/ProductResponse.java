@@ -10,4 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductResponse {
     private List<ProductRequestDTO> content;
+    private Integer pageNumber;
+    private Integer pageSize;
+    private long totalElements;
+    private Integer totalPages;
+    private boolean lastPage;
 }

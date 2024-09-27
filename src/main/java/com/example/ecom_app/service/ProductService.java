@@ -9,6 +9,10 @@ import java.nio.file.Paths;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,9 +61,14 @@ public class ProductService implements ProductServiceInterface {
         return modelMapper.map(productRepository.save(newProduct), ProductRequestDTO.class);
     }
 
-    public ProductResponse getProducts() {
+    public ProductResponse getProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         // check is product size is 0 or not
-        List<Product> products = productRepository.findAll();
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Product> productss = productRepository.findAll(pageDetails);
+        List<Product> products = productss.getContent();
+
         if (products.isEmpty()) {
             throw new APIException("No products found");
         }
@@ -68,6 +77,11 @@ public class ProductService implements ProductServiceInterface {
         }).toList();
         ProductResponse response = new ProductResponse();
         response.setContent(prodDto);
+        response.setPageNumber(productss.getNumber());
+        response.setPageSize(productss.getSize());
+        response.setTotalElements(productss.getTotalElements());
+        response.setTotalPages(productss.getTotalPages());
+        response.setLastPage(productss.isLast());
         return response;
     }
 
